@@ -1,0 +1,82 @@
+## 브라우저의 DB를 이용하여 간단한 문장등을 저장할 수 있다. ##
+## JDBC에서 사용하는 구문과 조금 차이가 있다. ##
+## 크롬, 오페라 브라우저에서 지원 가능하며, 익스플로어, 파이어폭스에서는 DB를 지원하지 않는다. ##
+
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+	<meta charset="UTF-8">
+	<title>웹브라우저의 DB 저장버튼으로 저장</title>
+	<script type="text/javascript">
+
+		var db; //db객체를 담을 변수
+		window.onload = function () {
+			if (window.openDatabase == undefined) {
+				alert("이 웹브라우저는 Database를 지원하지 않습니다.");
+				return; //메소드 끝내기
+			}
+			//db 객체 얻어오기
+			db = window.openDatabase("MyDB", "1.0", "test", 1024 * 1024 * 1); //1MB용량
+			//트랜잭션 시작하기
+			db.transaction(function (dbHelper) {
+				dbHelper.executeSql("CREATE TABLE IF NOT EXISTS member3 (num INTEGER primary key autoincrement, name TEXT not null, addr TEXT)");
+			});
+		}
+		function log(msg) {
+			var console = document.getElementById("console");
+			console.innerHTML += msg + "<br/>";
+		}
+		function showData() {
+			db.transaction(function (dbHelper) {
+				//db에서 데이터 셀렉트 해오기
+				dbHelper.executeSql("select * from member3", [], success, fail);
+				//[]안에 조건을 넣어주면 됨, 성공적으로 끝났을때 호출될 함수, 실패했을때 호출될 함수
+			});
+		}
+		//select가 성공일 때 호출되도록 등록한 함수
+		function success(dbHelper, rs) {
+			for (var i = 0; i < rs.rows.length; i++) {	
+				//select한 로우의 i번째 인덱스에 있는 값을 읽어온다.
+				var row = rs.rows.item(i);
+				//하나의 로우의 정보를 log에 출력
+				log("번호: " + row.num + " 이름: " + row.name + " 주소: " + row.addr)
+			}
+		}
+		//select가 실패일 때 호출되도록 등록한 함수
+		function fail() {
+			log("실패!!");
+		}
+		function save() {
+			var nameObj = document.getElementById("name");
+			var addrObj = document.getElementById("addr");
+			if (nameObj.value == "" || nameObj.value == null) {
+				alert("이름을 입력하세요!");
+				return;
+			}
+			//입력한 이름과 주소 값 얻어오기
+			var inputName = nameObj.value;
+			var inputAddr = addrObj.value;
+			log(inputName + " / " + inputAddr);
+			//DB저장
+			db.transaction(function (dbHelper) {
+				dbHelper.executeSql("INSERT INTO member3 VALUES(null,?,?)", [inputName, inputAddr])
+			});
+		}
+	</script>
+	</head>
+	<body>
+		<div>
+			이름<input type="text" id="name"/>
+			주소<input type="text" id="addr"/>
+			<button onclick="save()">저장</button>
+		</div>
+		<button onclick="showData()">DB에 저장된 내용 읽어오기</button>
+		<!-- 테스트 로그를 출력하기 위해 -->
+		
+		
+		
+		
+		<div id="console" style="width:500px; border:5px solid blue; font-size:20px"></div>
+	</body>
+</html>
+			

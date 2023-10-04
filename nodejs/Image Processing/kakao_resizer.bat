@@ -1,0 +1,1 @@
+node "cartoon resizer.js" "F:/Downloads/zzal/" "F:/Downloads/zzal resized/"
